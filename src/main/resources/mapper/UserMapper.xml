@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tarena.dao.UserMapper">
+    <!-- role的ResultMap -->
+    <resultMap type="Role" id="roleMap">
+        <!-- 注意:从表中的外键id,不能跟主表的主键id名字相同 -->
+        <id property="id" column="role_id" />
+        <result property="name" column="role_name"/>
+    </resultMap>
+    <!-- user的resultMap -->
+    <resultMap type="User" id="userMap">
+        <id property="id" column="user_id" jdbcType="VARCHAR"/>
+        <result property="loginName" column="user_loginname" jdbcType="VARCHAR"/>
+        <result property="loginType" column="user_logintype" jdbcType="VARCHAR"/>
+        <result property="nickName" column="user_nickname" jdbcType="VARCHAR"/>
+        <result property="password" column="user_password" jdbcType="VARCHAR"/>
+        <result property="type" column="user_type" jdbcType="INTEGER"/>
+        <result property="head" column="user_head" jdbcType="VARCHAR"/>
+        <result property="score" column="user_score" jdbcType="INTEGER"/>
+        <result property="isLock" column="user_islock" jdbcType="CHAR"/>
+        <result property="pwdState" column="user_pwdstate" jdbcType="VARCHAR"/>
+        <result property="regDate" column="user_regdate" jdbcType="TIMESTAMP"/>
+        <result property="age" column="user_age" jdbcType="INTEGER"/>
+        <result property="sex" column="user_sex" jdbcType="CHAR"/>
+        <result property="introduction" column="user_introduction" jdbcType="VARCHAR"/>
+        <collection property="roles" ofType="Role"
+                    javaType="java.util.List"
+                    resultMap="roleMap"></collection>
+    </resultMap>
+
+
+    <select id="login"
+            parameterType="String"
+            resultType="String">
+        select
+            user_id
+        from t_user
+        where user_loginname=#{loginName} and
+              user_password=#{password}
+    </select>
+
+
+    <select id="getCount" parameterType="Page" resultType="java.lang.Integer">
+     SELECT count(user_id)
+        FROM t_user
+        WHERE user_loginname like #{userKeyword} OR
+               user_nickname like #{userKeyword}
+
+    </select>
+
+
+    <select id="getUsersByPage" parameterType="Page" resultType="userMap">
+        SELECT
+            u.user_id,
+            u.user_loginname,
+            u.user_logintype,
+            u.user_nickname,
+            u.user_password,
+            u.user_type,
+            u.user_head,
+            u.user_score,
+            u.user_islock,
+            u.user_pwdstate,
+            u.user_regdate,
+            u.user_age,
+            u.user_sex,
+            r.role_id,
+            r.role_name
+
+       FROM (
+                SELECT * from t_user
+        where  user_loginname like #{userKeyword} OR
+               user_nickname like #{userKeyword}
+        LIMIT #{begin},#{page.size}
+        ) u
+        LEFT JOIN t_user_role ur on u.user_id=ur.uid
+           left outer join t_role r on ur.rid=r.role_id
+    </select>
+
+    <select id=" findUserById" parameterType="java.lang.String" resultType="userMap">
+        SELECT
+            u.user_id,
+            u.user_loginname,
+            u.user_logintype,
+            u.user_nickname,
+            u.user_password,
+            u.user_type,
+            u.user_head,
+            u.user_score,
+            u.user_islock,
+            u.user_pwdstate,
+            u.user_regdate,
+            u.user_age,
+            u.user_sex,
+            r.role_id,
+            r.role_name
+
+        FROM (
+                 SELECT * from t_user
+                 where  user_id=#{user_id}
+             ) u
+            LEFT JOIN t_user_role ur on u.user_id=ur.uid
+            left outer join t_role r on ur.rid=r.role_id
+    </select>
+
+
+
+</mapper>
